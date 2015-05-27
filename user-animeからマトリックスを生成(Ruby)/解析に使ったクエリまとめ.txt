@@ -1,0 +1,79 @@
+//アニメタイトル名"not hit"以外で、存在するアカウントとタイトルの組合わせを抽出①
+select acount_name,title,binary_count from user_title where title!="not hit" AND binary_count!=0;
+ 
+//アカウントごとに、同一アカウントにつぶやかれたタイトルの組合わせを抽出②（①を利用）
+select table1.title,table2.title
+from 
+(select acount_name,title,binary_count from user_title where title!="not hit" AND binary_count!=0) as table1
+join
+(select acount_name,title,binary_count from user_title where title!="not hit" AND binary_count!=0) as table2
+on (table1.acount_name = table2.acount_name)
+where table1.title != table2.title;
+ 
+ 
+//アニメタイトルの組合わせごとに、共につぶやいたアカウント数の算出③（②を利用）
+select title1,title2,count(*)
+from
+(
+select table1.title as title1,table2.title as title2
+from 
+(select acount_name,title,binary_count from user_title where title!="not hit" AND binary_count!=0) as table1
+join
+(select acount_name,title,binary_count from user_title where title!="not hit" AND binary_count!=0) as table2
+on (table1.acount_name = table2.acount_name)
+where table1.title != table2.title
+) as t_t_table
+group by title1,title2;
+
+//共につぶやいたアカウント数の最大値は17642
+maxは17642
+
+//アカウント総数
+697167
+ 
+ 
+//アニメタイトルの組合わせごとに、共につぶやいたアカウント数の算出し、アニメタイトルを数字のidに変換し、昇順にソート
+④（③を利用）
+select title_table2.t_id1,title_id.id,c
+from
+(
+select title_id.id as t_id1,title2,c
+from
+(
+select title1,title2,count(*) as c
+from
+(
+select table1.title as title1,table2.title as title2
+from 
+(select acount_name,title,binary_count from user_title where title!="not hit" AND binary_count!=0) as table1
+join
+(select acount_name,title,binary_count from user_title where title!="not hit" AND binary_count!=0) as table2
+on (table1.acount_name = table2.acount_name)
+where table1.title != table2.title
+) as t_t_table
+group by title1,title2
+)as title_table1
+join title_id
+on (title_table1.title1 = title_id.title)
+)as title_table2
+join title_id
+on (title_table2.title2 = title_id.title)
+order by title_table2.t_id1,title_id.id
+;
+
+
+//アカ名　アニメ名をidに変換して取得
+select user_id2.id as uu,title_id.id as tt,ut_2.binary_count
+from
+(
+select acount_name,title,binary_count from user_title where title != 'not hit'
+) as ut_2
+join user_id2
+on (ut_2.acount_name = user_id2.acount_name)
+join title_id
+on (ut_2.title = title_id.title)
+order by uu,tt
+;
+
+//ユーザIDのmax
+536089
